@@ -12,7 +12,6 @@ setup(name='pyfnordmetric',
     install_requires=(
         'redis',
     ),
-   },
    classifiers=[
          'Development Status :: 3 - Alpha',
          'Intended Audience :: Developers',

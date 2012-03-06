@@ -87,7 +87,6 @@ class Fnordmetric:
         key = hashlib.md5(email.strip().lower()).hexdigest()
         self.set_picture("http://www.gravatar.com/avatar/%s?s=40&d=%s"%(key, deafult), session)
 
-
 """
 class FnordmetricTests(unittest.TestCase):
     def setUp(self):
