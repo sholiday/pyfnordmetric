@@ -85,7 +85,7 @@ class Fnordmetric:
             raise ValueError('default must be one of "mm", "identicon", "monsterid", "wavatar", "retro"')
             
         key = hashlib.md5(email.strip().lower()).hexdigest()
-        self.set_picture("http://www.gravatar.com/avatar/%s?s=40&d=%s"%(key, deafult), session)
+        self.set_picture("http://www.gravatar.com/avatar/%s?s=40&d=%s"%(key, default), session)
 
 """
 class FnordmetricTests(unittest.TestCase):
