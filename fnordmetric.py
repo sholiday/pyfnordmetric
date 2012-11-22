@@ -43,7 +43,7 @@ class Fnordmetric:
         self.redis.expire("fnordmetric-event-%s"%event_id, 60)
         self.redis.lpush("fnordmetric-queue", event_id)
             
-    def event(self, eventtype, session=None):
+    def event(self, eventtype, session=None, extra=None):
         """
             Send an event to redis
         """
@@ -51,6 +51,8 @@ class Fnordmetric:
             event = { "_type":eventtype, "_session":session}
         else:
             event = { "_type":eventtype }
+        if isinstance(extra, dict):
+            event.update(extra)
         self.queue_event(event)
         
     def pageview(self, url, session=None):
