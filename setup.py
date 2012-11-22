@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='pyfnordmetric',
-    version='0.0.1',
+    version='0.0.2',
     description='A Python client for fnordmetric',
     author='Stephen Holiday',
     author_email='stephen.holiday@gmail.com',
@@ -24,7 +24,6 @@ setup(name='pyfnordmetric',
          'Programming Language :: Python',
          'Topic :: System :: Monitoring',
    ],
-   download_url="https://github.com/sholiday/pyfnordmetric/tarball/master",
    long_description = """
    A client for fnordmetric
    """
