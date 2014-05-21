@@ -23,6 +23,7 @@ import hashlib
 import redis
 import json
 import base64
+import socket
 
 class Fnordmetric:
     """
@@ -38,11 +39,11 @@ class Fnordmetric:
             Function to send a new event to redis
         """
         event_id = base64.urlsafe_b64encode(os.urandom(33))
-        
+
         self.redis.set("fnordmetric-event-%s"%event_id, json.dumps(event))
         self.redis.expire("fnordmetric-event-%s"%event_id, 60)
         self.redis.lpush("fnordmetric-queue", event_id)
-            
+
     def event(self, eventtype, session=None, extra=None):
         """
             Send an event to redis
@@ -54,17 +55,35 @@ class Fnordmetric:
         if isinstance(extra, dict):
             event.update(extra)
         self.queue_event(event)
-        
+
+    def incr(self, gauge, value=1, flush_interval=60):
+        self.event("_incr", extra=dict(value=value, gauge=gauge, flush_interval=flush_interval))
+
+    def decr(self, gauge, value=1, flush_interval=60):
+        self.event("_decr", extra=dict(value=value, gauge=gauge, flush_interval=flush_interval))
+
+    def set(self, gauge, value, flush_interval=60):
+        self.event("_set", extra=dict(value=value, gauge=gauge, flush_interval=flush_interval))
+
+    def min(self, gauge, value, flush_interval=60):
+        self.event("_min", extra=dict(value=value, gauge=gauge, flush_interval=flush_interval))
+
+    def max(self, gauge, value, flush_interval=60):
+        self.event("_max", extra=dict(value=value, gauge=gauge, flush_interval=flush_interval))
+
+    def avg(self, gauge, value, flush_interval=60):
+        self.event("_avg", extra=dict(value=value, gauge=gauge, flush_interval=flush_interval))
+
     def pageview(self, url, session=None):
         """
             Register a pageview with optional session key.
         """
         event = { "_type": "_pageview", "url": url}
-        
+
         if session is not None:
             event["_session"] = session
         self.queue_event(event)
-    
+
     def set_name(self, name, session):
         """
             Set the name for the given session.
@@ -85,9 +104,36 @@ class Fnordmetric:
         """
         if default not in ["mm", "identicon", "monsterid", "wavatar", "retro"]:
             raise ValueError('default must be one of "mm", "identicon", "monsterid", "wavatar", "retro"')
-            
+
         key = hashlib.md5(email.strip().lower()).hexdigest()
         self.set_picture("http://www.gravatar.com/avatar/%s?s=40&d=%s"%(key, default), session)
+
+
+class FnordmetricTcp(Fnordmetric):
+    """
+       Works with Fnordmetric through tcp
+    """
+
+    def __init__(self, host="localhost", port=2323):
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.connect((host, port))
+
+    def queue_event(self, event):
+        """
+            Function to send a new event to connection
+        """
+        self._socket.send(json.dumps(event)+'\n')
+
+
+class FnordmetricUdp(FnordmetricTcp):
+    """
+       Works with Fnordmetric through udp
+    """
+
+    def __init__(self, host="localhost", port=2323):
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._socket.connect((host, port))
+
 
 """
 class FnordmetricTests(unittest.TestCase):
